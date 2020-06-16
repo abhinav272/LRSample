@@ -9,12 +9,18 @@ import androidx.fragment.app.FragmentActivity
 /**
  * Loads [MainFragment].
  */
-class MainActivity : FragmentActivity() {
+class MainActivity : FragmentActivity(), BrowseFragment.BrowseFragmentHost {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
 
+    }
+
+    override fun onMediaClicked(movie: Movie) {
+        supportFragmentManager.beginTransaction()
+            .add(R.id.main_container, MediaDetailsFragment.getInstance(movie), "tagg")
+            .addToBackStack("tagg").commit()
     }
 }
