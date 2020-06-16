@@ -1,30 +1,63 @@
 package com.example.lrsample
 
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import androidx.core.content.ContextCompat
 import androidx.leanback.app.BrowseFragment
 import androidx.leanback.app.BrowseSupportFragment
-import androidx.leanback.widget.ArrayObjectAdapter
-import androidx.leanback.widget.HeaderItem
-import androidx.leanback.widget.ListRow
-import androidx.leanback.widget.ListRowPresenter
+import androidx.leanback.widget.*
+import java.lang.IllegalStateException
 
 class BrowseFragment : BrowseSupportFragment() {
     private val TAG = "BrowseFragment"
     private lateinit var rowsAdapter: ArrayObjectAdapter
     private lateinit var mList: List<Movie>
     private lateinit var mCategories: Array<String>
+    private lateinit var host : BrowseFragmentHost
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
     }
 
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        context?.let {
+            if(context is BrowseFragmentHost) host = context
+            else throw IllegalStateException("Host must implement BrowseFragmentHost")
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setupView()
         setupData()
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        setupEventListeners()
+    }
+
+    private fun setupEventListeners() {
+        onItemViewClickedListener =
+            OnItemViewClickedListener { itemViewHolder, item, rowViewHolder, row ->
+                item?.let{ Log.e(TAG, "OnItemViewClickedListener: ${item.toString()}") }
+                when(item) {
+                    is Movie -> host.onMediaClicked(item)
+                    else -> Log.e(TAG, "Some item clicked")
+                }
+            }
+
+        onItemViewSelectedListener =
+            OnItemViewSelectedListener { itemViewHolder, item, rowViewHolder, row ->
+                item?.let { Log.e(TAG, "OnItemViewSelectedListener: ${item.toString()}") }
+
+
+            }
     }
 
     private fun setupData() {
@@ -77,5 +110,9 @@ class BrowseFragment : BrowseSupportFragment() {
             context!!,
             R.color.search_opaque
         )
+    }
+
+    interface BrowseFragmentHost {
+        fun onMediaClicked(movie : Movie)
     }
 }
